@@ -1,29 +1,90 @@
-from flask import Flask, request, jsonify
-import openai
-import os
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <title>OpenAI Ερωτήσεις</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h2>Καλώς ήρθες, <span id="username">{{ username }}</span></h2>
+    <label>Αλλαγή ψευδωνύμου: </label>
+    <input type="text" id="name_input" value="{{ username }}">
+    <button onclick="changeUsername()">Αλλαγή</button>
 
-app = Flask(__name__)
+    <hr>
+    <h3>Κάνε Ερώτηση</h3>
+    <textarea id="question_input" rows="3" cols="50"></textarea><br>
+    <label>
+        <input type="checkbox" id="use_openai" onchange="toggleCategory()"> Χρήση OpenAI
+    </label>
+    <select id="category" style="display:none;">
+        <option value="Γνώση">Γνώση</option>
+        <option value="Γεωγραφία">Γεωγραφία</option>
+        <option value="Γενική Ερώτηση">Γενική Ερώτηση</option>
+        <option value="Άνω των 18">Άνω των 18</option>
+    </select><br>
+    <button onclick="submitQuestion()">Στείλε Ερώτηση</button>
 
-# Ορίστε το API key ως μεταβλητή περιβάλλοντος
-openai.api_key = os.environ.get("OPENAI_API_KEY")
+    <hr>
+    <h3>Ερωτήσεις & Απαντήσεις</h3>
+    <div id="qa_section"></div>
 
-@app.route("/chat", methods=["POST"])
-def chat():
-    data = request.json
-    prompt = data.get("prompt", "")
+    <script>
+        let username = "{{ username }}";
 
-    # Κλήση στο OpenAI API
-    response = openai.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": prompt}
-        ]
-    )
+        function changeUsername() {
+            const newName = document.getElementById("name_input").value;
+            if(newName.trim() !== "") {
+                username = newName.trim();
+                document.getElementById("username").innerText = username;
+            }
+        }
 
-    return jsonify({
-        "response": response.choices[0].message["content"]
-    })
+        function toggleCategory() {
+            const useOpenAI = document.getElementById("use_openai").checked;
+            document.getElementById("category").style.display = useOpenAI ? "inline" : "none";
+        }
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+        function submitQuestion() {
+            const question = document.getElementById("question_input").value;
+            const useOpenAI = document.getElementById("use_openai").checked;
+            const category = document.getElementById("category").value;
+
+            if(question.trim() === "") return alert("Πρέπει να γράψεις μια ερώτηση.");
+
+            $.ajax({
+                url: "/submit_question",
+                method: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    username: username,
+                    question: question,
+                    use_openai: useOpenAI,
+                    category: category
+                }),
+                success: () => {
+                    document.getElementById("question_input").value = "";
+                }
+            });
+        }
+
+        function fetchData() {
+            $.get("/get_data", function(response){
+                const section = document.getElementById("qa_section");
+                section.innerHTML = "";
+                response.forEach(item => {
+                    const div = document.createElement("div");
+                    div.style.borderBottom = "1px solid gray";
+                    div.style.marginBottom = "5px";
+                    div.innerHTML = `<strong>${item.username}</strong>: ${item.question}<br><em>${item.answer}</em>`;
+                    section.appendChild(div);
+                });
+            });
+        }
+
+        // Ανάκτηση δεδομένων κάθε 2 δευτ.
+        setInterval(fetchData, 2000);
+        fetchData();
+    </script>
+</body>
+</html>
