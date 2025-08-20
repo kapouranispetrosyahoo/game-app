@@ -2,6 +2,18 @@ from flask import Flask, request, render_template_string
 import openai
 import os
 
+@app.route("/test_openai")
+def test_openai():
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": "Hello"}],
+            max_tokens=10
+        )
+        return f"OpenAI API δουλεύει! Response: {response.choices[0].message.content}"
+    except Exception as e:
+        return f"Κάτι πήγε στραβά: {e}"
+
 app = Flask(__name__)
 
 # Βάλε το δικό σου API key εδώ ή ως περιβαλλοντική μεταβλητή
