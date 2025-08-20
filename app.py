@@ -1,29 +1,27 @@
-from flask import Flask, request, jsonify
-import openai
-import os
+from flask import Flask, render_template, request, jsonify
+from openai import OpenAI
 
 app = Flask(__name__)
+client = OpenAI(api_key="YOUR_API_KEY")  # Βάλε εδώ το δικό σου API key
 
-# Ορίστε το API key ως μεταβλητή περιβάλλοντος
-openai.api_key = os.environ.get("OPENAI_API_KEY")
+@app.route("/")
+def index():
+    return render_template("index.html")
 
-@app.route("/chat", methods=["POST"])
-def chat():
-    data = request.json
-    prompt = data.get("prompt", "")
+@app.route("/get_nickname", methods=["POST"])
+def get_nickname():
+    user_input = request.form.get("user_input")
+    if not user_input:
+        return jsonify({"error": "No input provided"}), 400
 
     # Κλήση στο OpenAI API
-    response = openai.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": prompt}
-        ]
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": user_input}]
     )
 
-    return jsonify({
-        "response": response.choices[0].message["content"]
-    })
+    nickname = response.choices[0].message.content
+    return jsonify({"nickname": nickname})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(debug=True)

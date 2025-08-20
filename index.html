@@ -2,28 +2,31 @@
 <html lang="el">
 <head>
     <meta charset="UTF-8">
-    <title>Chat με GPT</title>
+    <title>Nickname Generator</title>
     <script>
-        async function sendPrompt() {
-            const prompt = document.getElementById("prompt").value;
-            const responseDiv = document.getElementById("response");
+        async function generateNickname() {
+            const userInput = document.getElementById("user_input").value;
+            if (!userInput) return;
 
-            const res = await fetch("/chat", {
+            const response = await fetch("/get_nickname", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ prompt })
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: "user_input=" + encodeURIComponent(userInput)
             });
 
-            const data = await res.json();
-            responseDiv.textContent = data.response;
+            const data = await response.json();
+            if (data.nickname) {
+                document.getElementById("result").innerText = data.nickname;
+            } else {
+                document.getElementById("result").innerText = "Σφάλμα!";
+            }
         }
     </script>
 </head>
 <body>
-    <h1>Chat με GPT</h1>
-    <textarea id="prompt" rows="4" cols="50" placeholder="Γράψε κάτι..."></textarea><br>
-    <button onclick="sendPrompt()">Στείλε</button>
-    <h2>Απάντηση:</h2>
-    <div id="response"></div>
+    <h1>Δημιουργός Nickname</h1>
+    <input type="text" id="user_input" placeholder="Γράψε κάτι">
+    <button onclick="generateNickname()">Δημιουργία</button>
+    <p id="result"></p>
 </body>
 </html>
