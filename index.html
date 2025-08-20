@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Game Ερωτήσεων</title>
+</head>
+<body>
+    <h1>Καλώς ήρθες στο παιχνίδι ερωτήσεων!</h1>
+
+    <h2>Κάνε μια ερώτηση:</h2>
+    <form action="/ask" method="POST">
+        <input type="text" name="question" placeholder="Γράψε την ερώτηση" required>
+        <button type="submit">Υποβολή</button>
+    </form>
+
+    <h2>Ερωτήσεις:</h2>
+    <ul>
+        {% for q in questions %}
+            <li>
+                {{ q.question }}
+                <form action="/answer/{{ loop.index0 }}" method="POST">
+                    <input type="text" name="answer" placeholder="Απάντηση" required>
+                    <button type="submit">Αποστολή</button>
+                </form>
+                <ul>
+                    {% for a in q.answers %}
+                        <li>{{ a }}</li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
