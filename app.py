@@ -1,6 +1,9 @@
 from flask import Flask, render_template_string, request, redirect, session
-import openai
 import os
+import openai
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"  # Αλλάξε το σε κάτι ασφαλές για παραγωγή
