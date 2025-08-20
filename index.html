@@ -1,48 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="el">
 <head>
-    <title>Game Ερωτήσεων</title>
+    <meta charset="UTF-8">
+    <title>Game Q&A</title>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 </head>
-<script>
-  setTimeout(function(){
-     window.location.reload(1);
-  }, 5000); // ανανεώνει κάθε 5 δευτερόλεπτα
-</script>
-
 <body>
-    <h1>Καλώς ήρθες στο παιχνίδι ερωτήσεων!</h1>
+    <h1>Καλώς ήρθες!</h1>
 
-    <h2>Κάνε μια ερώτηση:</h2>
-    <form action="/ask" method="post">
-      <input type="text" name="nickname" placeholder="Το ψευδώνυμό σου" required>
-      <input type="text" name="question" placeholder="Γράψε την ερώτηση" required>
-      <button type="submit">Υποβολή</button>
-    </form>
+    <!-- Πεδίο για nickname -->
+    <div>
+        <label for="nickname_input">Ψευδώνυμο:</label>
+        <input type="text" id="nickname_input" value="{{ nickname }}">
+        <button id="change_nickname">Αλλαγή</button>
+    </div>
 
-
-    <h2>Ερωτήσεις:</h2>
-    <ul>
-        {% for q in questions %}
-            <li>
-        <form action="/answer/{{ loop.index0 }}" method="post">
-              <select name="responder" required>
-                 <option value="" disabled selected>Επίλεξε ποιος απαντάει</option>
-                {% for q in questions %}
-                <option value="{{ q.nickname }}">{{ q.nickname }}</option>
-                {% endfor %}
-              </select>
-            <input type="text" name="answer" placeholder="Απάντηση" required>
-             <button type="submit">Αποστολή</button>
+    <!-- Κάνε μια ερώτηση -->
+    <div>
+        <h2>Κάνε μια ερώτηση</h2>
+        <form id="ask_form" method="post" action="/ask">
+            <input type="text" name="question" id="question_input">
+            <button type="submit">Υποβολή</button>
         </form>
+    </div>
 
+    <!-- Ερωτήσεις και απαντήσεις -->
+    <div id="questions_div">
+        <h2>Ερωτήσεις</h2>
+        {% for q in questions %}
+            <div class="question_block">
+                <strong>{{ q.nickname }} ρώτησε:</strong> {{ q.question }}
+                <form method="post" action="/answer/{{ loop.index0 }}">
+                    <input type="text" name="answer">
+                    <button type="submit">Απάντηση</button>
+                </form>
                 <ul>
                     {% for a in q.answers %}
-                     <p><strong>{{ a.responder }}:</strong> {{ a.text }}</p>
+                        <li><strong>{{ a.nickname }}:</strong> {{ a.answer }}</li>
                     {% endfor %}
-
                 </ul>
-            </li>
+            </div>
         {% endfor %}
-    </ul>
+    </div>
+
+    <script>
+        // Αλλαγή nickname χωρίς ανανέωση σελίδας
+        $("#change_nickname").click(function() {
+            const new_nickname = $("#nickname_input").val();
+            $.ajax({
+                url: "/set_nickname",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({nickname: new_nickname}),
+                success: function() {
+                    alert("Το ψευδώνυμο άλλαξε!");
+                }
+            });
+        });
+    </script>
 </body>
 </html>

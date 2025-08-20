@@ -1,7 +1,8 @@
-from flask import Flask, render_template_string, request, redirect
-import os
+from flask import Flask, render_template_string, request, redirect, session
+import random
 
 app = Flask(__name__)
+app.secret_key = "ένα_τυχαίο_μυστικό_κλειδί"
 
 # προσωρινή μνήμη για τις ερωτήσεις και απαντήσεις
 questions = []
@@ -10,29 +11,40 @@ questions = []
 with open("index.html", "r", encoding="utf-8") as f:
     index_html_content = f.read()
 
+# κάθε χρήστης παίρνει nickname αν δεν έχει
+@app.before_request
+def set_nickname():
+    if "nickname" not in session:
+        session["nickname"] = f"User{random.randint(1000,9999)}"
+
 @app.route("/")
 def index():
-    return render_template_string(index_html_content, questions=questions)
+    return render_template_string(index_html_content, questions=questions, nickname=session["nickname"])
 
 @app.route("/ask", methods=["POST"])
 def ask():
-    nickname = request.form.get("nickname")
     question = request.form.get("question")
-    if question and nickname:
-        questions.append({"question": question, "nickname": nickname, "answers": []})
+    if question:
+        # αποθηκεύουμε και το nickname του χρήστη
+        questions.append({"question": question, "answers": [], "nickname": session["nickname"]})
     return redirect("/")
-
 
 @app.route("/answer/<int:qid>", methods=["POST"])
 def answer(qid):
     answer = request.form.get("answer")
-    responder = request.form.get("responder")
-    if answer and responder and 0 <= qid < len(questions):
-        questions[qid]["answers"].append({"responder": responder, "text": answer})
+    if answer and 0 <= qid < len(questions):
+        # αποθηκεύουμε και ποιος απάντησε
+        questions[qid]["answers"].append({"answer": answer, "nickname": session["nickname"]})
     return redirect("/")
 
+# route για αλλαγή nickname
+@app.route("/set_nickname", methods=["POST"])
+def set_nickname_post():
+    data = request.get_json()
+    nickname = data.get("nickname")
+    if nickname:
+        session["nickname"] = nickname
+    return "", 200
 
 if __name__ == "__main__":
-    # παίρνει το port από το Render ή default στο 10000
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=10000)
