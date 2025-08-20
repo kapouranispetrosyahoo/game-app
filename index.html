@@ -1,32 +1,29 @@
-<!DOCTYPE html>
-<html lang="el">
-<head>
-    <meta charset="UTF-8">
-    <title>Nickname Generator</title>
-    <script>
-        async function generateNickname() {
-            const userInput = document.getElementById("user_input").value;
-            if (!userInput) return;
+from flask import Flask, request, jsonify
+import openai
+import os
 
-            const response = await fetch("/get_nickname", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: "user_input=" + encodeURIComponent(userInput)
-            });
+app = Flask(__name__)
 
-            const data = await response.json();
-            if (data.nickname) {
-                document.getElementById("result").innerText = data.nickname;
-            } else {
-                document.getElementById("result").innerText = "Σφάλμα!";
-            }
-        }
-    </script>
-</head>
-<body>
-    <h1>Δημιουργός Nickname</h1>
-    <input type="text" id="user_input" placeholder="Γράψε κάτι">
-    <button onclick="generateNickname()">Δημιουργία</button>
-    <p id="result"></p>
-</body>
-</html>
+# Ορίστε το API key ως μεταβλητή περιβάλλοντος
+openai.api_key = os.environ.get("OPENAI_API_KEY")
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    data = request.json
+    prompt = data.get("prompt", "")
+
+    # Κλήση στο OpenAI API
+    response = openai.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    return jsonify({
+        "response": response.choices[0].message["content"]
+    })
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
