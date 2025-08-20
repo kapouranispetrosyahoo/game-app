@@ -10,6 +10,19 @@ app.secret_key = "supersecretkey"  # Αλλάξε το σε κάτι ασφαλ�
 
 # Ρύθμισε εδώ το OpenAI API key σου
 openai.api_key = os.getenv("OPENAI_API_KEY")
+from openai.error import RateLimitError
+
+try:
+    response = openai.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": user_input}]
+    )
+    answer = response.choices[0].message.content
+except RateLimitError:
+    # Αν τελείωσαν τα credits, ζητάμε όνομα ή δίνουμε placeholder
+    user_name = input("Τα credits τελείωσαν! Πληκτρολόγησε το όνομά σου: ")
+    answer = f"Γεια σου, {user_name}! Τα credits τελείωσαν, οπότε χρησιμοποιώ προσωρινή απάντηση."
+
 
 questions = []
 
