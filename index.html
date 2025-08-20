@@ -2,61 +2,28 @@
 <html lang="el">
 <head>
     <meta charset="UTF-8">
-    <title>Game Q&A</title>
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <title>Chat με GPT</title>
+    <script>
+        async function sendPrompt() {
+            const prompt = document.getElementById("prompt").value;
+            const responseDiv = document.getElementById("response");
+
+            const res = await fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt })
+            });
+
+            const data = await res.json();
+            responseDiv.textContent = data.response;
+        }
+    </script>
 </head>
 <body>
-    <h1>Καλώς ήρθες!</h1>
-
-    <!-- Πεδίο για nickname -->
-    <div>
-        <label for="nickname_input">Ψευδώνυμο:</label>
-        <input type="text" id="nickname_input" value="{{ nickname }}">
-        <button id="change_nickname">Αλλαγή</button>
-    </div>
-
-    <!-- Κάνε μια ερώτηση -->
-    <div>
-        <h2>Κάνε μια ερώτηση</h2>
-        <form id="ask_form" method="post" action="/ask">
-            <input type="text" name="question" id="question_input">
-            <button type="submit">Υποβολή</button>
-        </form>
-    </div>
-
-    <!-- Ερωτήσεις και απαντήσεις -->
-    <div id="questions_div">
-        <h2>Ερωτήσεις</h2>
-        {% for q in questions %}
-            <div class="question_block">
-                <strong>{{ q.nickname }} ρώτησε:</strong> {{ q.question }}
-                <form method="post" action="/answer/{{ loop.index0 }}">
-                    <input type="text" name="answer">
-                    <button type="submit">Απάντηση</button>
-                </form>
-                <ul>
-                    {% for a in q.answers %}
-                        <li><strong>{{ a.nickname }}:</strong> {{ a.answer }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% endfor %}
-    </div>
-
-    <script>
-        // Αλλαγή nickname χωρίς ανανέωση σελίδας
-        $("#change_nickname").click(function() {
-            const new_nickname = $("#nickname_input").val();
-            $.ajax({
-                url: "/set_nickname",
-                type: "POST",
-                contentType: "application/json",
-                data: JSON.stringify({nickname: new_nickname}),
-                success: function() {
-                    alert("Το ψευδώνυμο άλλαξε!");
-                }
-            });
-        });
-    </script>
+    <h1>Chat με GPT</h1>
+    <textarea id="prompt" rows="4" cols="50" placeholder="Γράψε κάτι..."></textarea><br>
+    <button onclick="sendPrompt()">Στείλε</button>
+    <h2>Απάντηση:</h2>
+    <div id="response"></div>
 </body>
 </html>
