@@ -16,17 +16,21 @@ def index():
 
 @app.route("/ask", methods=["POST"])
 def ask():
+    nickname = request.form.get("nickname")
     question = request.form.get("question")
-    if question:
-        questions.append({"question": question, "answers": []})
+    if question and nickname:
+        questions.append({"question": question, "nickname": nickname, "answers": []})
     return redirect("/")
+
 
 @app.route("/answer/<int:qid>", methods=["POST"])
 def answer(qid):
     answer = request.form.get("answer")
-    if answer and 0 <= qid < len(questions):
-        questions[qid]["answers"].append(answer)
+    responder = request.form.get("responder")
+    if answer and responder and 0 <= qid < len(questions):
+        questions[qid]["answers"].append({"responder": responder, "text": answer})
     return redirect("/")
+
 
 if __name__ == "__main__":
     # παίρνει το port από το Render ή default στο 10000

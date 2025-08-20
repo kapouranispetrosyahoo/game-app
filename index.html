@@ -7,24 +7,33 @@
     <h1>Καλώς ήρθες στο παιχνίδι ερωτήσεων!</h1>
 
     <h2>Κάνε μια ερώτηση:</h2>
-    <form action="/ask" method="POST">
-        <input type="text" name="question" placeholder="Γράψε την ερώτηση" required>
-        <button type="submit">Υποβολή</button>
+    <form action="/ask" method="post">
+      <input type="text" name="nickname" placeholder="Το ψευδώνυμό σου" required>
+      <input type="text" name="question" placeholder="Γράψε την ερώτηση" required>
+      <button type="submit">Υποβολή</button>
     </form>
+
 
     <h2>Ερωτήσεις:</h2>
     <ul>
         {% for q in questions %}
             <li>
-                {{ q.question }}
-                <form action="/answer/{{ loop.index0 }}" method="POST">
-                    <input type="text" name="answer" placeholder="Απάντηση" required>
-                    <button type="submit">Αποστολή</button>
-                </form>
+        <form action="/answer/{{ loop.index0 }}" method="post">
+              <select name="responder" required>
+                 <option value="" disabled selected>Επίλεξε ποιος απαντάει</option>
+                {% for q in questions %}
+                <option value="{{ q.nickname }}">{{ q.nickname }}</option>
+                {% endfor %}
+              </select>
+            <input type="text" name="answer" placeholder="Απάντηση" required>
+             <button type="submit">Αποστολή</button>
+        </form>
+
                 <ul>
                     {% for a in q.answers %}
-                        <li>{{ a }}</li>
+                     <p><strong>{{ a.responder }}:</strong> {{ a.text }}</p>
                     {% endfor %}
+
                 </ul>
             </li>
         {% endfor %}
