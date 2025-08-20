@@ -1,4 +1,5 @@
 from flask import Flask, render_template_string, request, redirect
+import os
 
 app = Flask(__name__)
 
@@ -28,4 +29,6 @@ def answer(qid):
     return redirect("/")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # παίρνει το port από το Render ή default στο 10000
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
