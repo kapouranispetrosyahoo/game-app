@@ -16,15 +16,15 @@ with open("index.html", "r", encoding="utf-8") as f:
 
 def generate_ai_nickname():
     """Ζητάει από το OpenAI API ένα διασκεδαστικό AI-themed nickname."""
-    prompt = "Give me a fun, short, AI-themed nickname, one word only."
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=prompt,
-        max_tokens=5,
-        temperature=0.8
-    )
-    nickname = response.choices[0].text.strip()
-    return nickname or "AI_User"
+response = openai.chat.completions.create(
+    model="gpt-3.5-turbo",
+    messages=[
+        {"role": "system", "content": "Είσαι ένας δημιουργικός βοηθός για nicknames."},
+        {"role": "user", "content": "Δώσε ένα nickname"}
+    ]
+)
+nickname = response.choices[0].message.content.strip()
+
 
 @app.before_request
 def ensure_nickname():
